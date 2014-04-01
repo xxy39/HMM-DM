@@ -25,7 +25,7 @@ output.dir<-"/home/xxy39"    # Note, this is only an example. The users need to 
 
 # run HMM.DM method
 date()
-source(paste(code.dir, "HMM.DM.txt", sep="/"))
+source(paste(code.dir, "HMM.DM.R", sep="/"))
 HMM.DM(total.reads, meth.reads, n.control=4, n.test=4,  chromosome=1, code.dir, output.dir, min.percent=1 )
 date()
 save.image()

@@ -33,35 +33,35 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
         #####################################################################################################################
 	
 	# The following scource code files are used in quality control
-        source(paste(code.dir,"getMeth.txt",sep="/"))
+        source(paste(code.dir,"getMeth.R",sep="/"))
 
 	# The following scource code files are used to partition the chromosome
-        source(paste(code.dir,"partition.by.cutoff.txt",sep="/"))
+        source(paste(code.dir,"partition.by.cutoff.R",sep="/"))
 
         # The following scource code files are used to update transition probabilities
-        source(paste(code.dir, "check.post.H.txt",sep="/"))
-        source(paste(code.dir, "get.H.max.string.txt",sep="/"))
-        source(paste(code.dir, "count.T.txt",sep="/"))
-        source(paste(code.dir, "up.T.prob.txt",sep="/"))
+        source(paste(code.dir, "check.post.H.R",sep="/"))
+        source(paste(code.dir, "get.H.max.string.R",sep="/"))
+        source(paste(code.dir, "count.T.R",sep="/"))
+        source(paste(code.dir, "up.T.prob.R",sep="/"))
         
         # The following scource code files are used to update emission probabilities and priors
-        source(paste(code.dir, "density.a.b.txt",sep="/"))
-        source(paste(code.dir, "density.a2.txt",sep="/"))
-        source(paste(code.dir, "density.a3.txt",sep="/"))
-        source(paste(code.dir, "density.a4.txt",sep="/"))
-        source(paste(code.dir, "density.a5.txt",sep="/"))
-        source(paste(code.dir, "uni.slice.sample.txt",sep="/"))
-        source(paste(code.dir, "calculate.a.b.interval.txt",sep="/"))
-        source(paste(code.dir, "slice.sample.a.b.a.txt",sep="/"))
-        source(paste(code.dir, "slice.sample.a.b.b.txt",sep="/"))
-        source(paste(code.dir, "sample.emiss.hyper.a.b.txt",sep="/"))
+        source(paste(code.dir, "density.a.b.R",sep="/"))
+        source(paste(code.dir, "density.a2.R",sep="/"))
+        source(paste(code.dir, "density.a3.R",sep="/"))
+        source(paste(code.dir, "density.a4.R",sep="/"))
+        source(paste(code.dir, "density.a5.R",sep="/"))
+        source(paste(code.dir, "uni.slice.sample.R",sep="/"))
+        source(paste(code.dir, "calculate.a.b.interval.R",sep="/"))
+        source(paste(code.dir, "slice.sample.a.b.a.R",sep="/"))
+        source(paste(code.dir, "slice.sample.a.b.b.R",sep="/"))
+        source(paste(code.dir, "sample.emiss.hyper.a.b.R",sep="/"))
 
         # The following scource code files are used to update hidden states
-        source(paste(code.dir, "gibbs.sample.ID.v4.txt",sep="/"))
+        source(paste(code.dir, "gibbs.sample.ID.v4.R",sep="/"))
 
         # The following scource code files are used to summerize DM CGs into regions
-        source(paste(code.dir, "chr.DM.region.by.CG.ver3.txt",sep="/"))
-        source(paste(code.dir, "DM.region.combine.ver2.txt",sep="/"))    
+        source(paste(code.dir, "chr.DM.region.by.CG.ver3.R",sep="/"))
+        source(paste(code.dir, "DM.region.combine.ver2.R",sep="/"))    
 
 	########################################################################################################################
 	# 1. quality control
