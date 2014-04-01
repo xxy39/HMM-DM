@@ -4,7 +4,7 @@ The HMM-DM program identifies differentially methylated (DM) CG sites and region
 
 HMM-DM requires a Linux/Unix system, with R installed. There are one document and two folders:
 _____________________________________________________________________________________________________________
-HMM.DM.documents.pdf:	A copy of the user manual
+HMM.DM.user.manual.pdf:	A copy of the user manual
 HMM.DM.code: A folder containing all R source code files used for HMM-DM.
 example.data: A folder containing all example input data as mentioned in this document, an example.script.txt for running               HMM-DM, and the output files generated from the example.script.txt.
 _____________________________________________________________________________________________________________
