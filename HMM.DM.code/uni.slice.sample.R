@@ -1,5 +1,4 @@
 
-
 uni.slice.sample <- function (x0, f, w=1, lower, upper)
 {
   #####################################################
@@ -7,15 +6,16 @@ uni.slice.sample <- function (x0, f, w=1, lower, upper)
   # Arguments:
   #
   #   x0    Initial point
-  #   g     Function returning the log of the probability density 
+  #   f     Function returning the log of the probability density 
   #   w     Size of the steps for creating interval (default 1)
   #   lower Lower bound on support of the distribution
   #   upper Upper bound on support of the distribution 
+  #
+  #  This function samples from probability function "f" that is defined by users.
   #####################################################
 
   # Check the validity of the arguments.
   
-  # cat ("x0 is", x0, "\n")
   if (!is.numeric(x0) || length(x0)!=1
    || !is.function(f) 
    || !is.numeric(w) || length(w)!=1 || w<=0 
@@ -57,11 +57,9 @@ uni.slice.sample <- function (x0, f, w=1, lower, upper)
   # Shrink interval to lower and upper bounds.
 
   if (L<lower) 
-  { L <- lower
-  }
+    { L <- lower }
   if (R>upper)
-  { R <- upper
-  }
+    { R <- upper }
 
   # Sample from the interval, shrinking it on each rejection.
 
@@ -74,11 +72,9 @@ uni.slice.sample <- function (x0, f, w=1, lower, upper)
     if (fx1>=level) break
 
     if (x1>x0) 
-    { R <- x1
-    }
+      { R <- x1 }
     else 
-    { L <- x1
-    }
+      { L <- x1 }
   }
 
   # Return the point sampled

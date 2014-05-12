@@ -3,7 +3,7 @@ slice.sample.a.b.b <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
 {
    ######################################################################
    # R FUNCTIONS FOR PERFORMING UNIVARIATE SLICE SAMPLING on b.
-
+   #
    # Arguments:
    #
    #   a, b      Initial point of a and b
@@ -15,8 +15,6 @@ slice.sample.a.b.b <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
 
   # Check the validity of the arguments.
   
-  # cat ("a is", a, "; b is", b, "\n")
-
   if (!is.numeric(a) || length(a)!=1
    || !is.numeric(b) || length(b)!=1
    || !is.numeric(w) || length(w)!=1 || w<=0 
@@ -69,11 +67,9 @@ slice.sample.a.b.b <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
   # Shrink interval to lower and upper bounds.
 
   if (L<left.end) 
-  { L <- left.end
-  }
+     { L <- left.end }
   if (R>right.end)
-  { R <- right.end
-  }
+     { R <- right.end }
 
   # step 3: Sample from the interval, shrinking it on each rejection.
 
@@ -86,11 +82,9 @@ slice.sample.a.b.b <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
     if (fy1>=level) break
 
     if (y1>y0) 
-    { R <- y1
-    }
+       { R <- y1 }
     else 
-    { L <- y1
-    }
+       { L <- y1 }
   }
 
   # Return the point sampled

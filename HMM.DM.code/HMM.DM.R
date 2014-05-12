@@ -1,17 +1,18 @@
 
 
-HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.dir, output.dir, min.percent, iterations=60, post.threshold=0.4, meanDiff.cut=0.3, max.distance=100, max.empty.CG=3, max.EM=1, max.post=0.8, singleton=TRUE)
+HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.dir, min.percent, iterations=60, post.threshold=0.5, meanDiff.cut=0.3, max.distance=100, max.empty.CG=3, max.EM=1, max.post=0.8, singleton=TRUE)
   {
   
         #####################################################################################################################
 	# run HMM-DM with a single command
 	#
-	# 1. meth.reads: a matrix of methylation levels in two groups. col1, positions; col2-5, methylation levels for 4 samples in group 1, 
-	#                col6-9, methylation  levels for 4 samples in group 2.
-	# 2. total.reads: a matrix of covreage for all samples in two groups. col1, positions; col2-5, coverage for 4 samples in group 1, col6-9, 
-	#                coverage for 4 samples in group 2. Note that the positions and order of samples should correspond to those in mC.matrix.
-        # 3. n.control:  Numeric. number of control samples
-	# 4. n.test:  Numeric. number of control samples
+	# 1. meth.reads: a matrix of methylation levels in two groups. col1, positions; col2-(n1+1), methylation levels for n1 samples in group 1, 
+	#                col(n1+2)-(n1+n2+2), methylation  levels for n2 samples in group 2.
+	# 2. total.reads: a matrix of covreage for all samples in two groups. col1, positions; col2-(n1+1), coverage for n1 samples in group 1, 
+	#                 col(n1+2)-(n1+n2+2), coverage for n2 samples in group 2. 
+	#                 Note that the positions and order of samples should correspond to those in mC.matrix.
+        # 3. n1:  Numeric. number of control samples
+	# 4. n2:  Numeric. number of control samples
 	# 5. chromosome:Character. The chromosome the users want to analyze, e.g., chromosome =1, or chromosome = 2.
 	# 6. code.dir: String. The directory of the source code files of HMM-DM (e.g., /home/HMM.DM/HMM.DM.code).
 	#                Note, there should be no "/" at the very end.
@@ -20,7 +21,7 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
 	# 8. min.percent: Numeric. The CG sites should be covered in at least min.percent of the control samples AND of the test samples. 
 	#                 Otherwise, the CG sites are dropped. Default = 0.8
 	# 9. iterations: Numeric. The number of iterations when running HMM-DM. Default = 60
-	# 10 post.threshold: Numeric. DM CG sites with posterior probability < post.threshold are filtered out. Default = 0.4. 
+	# 10 post.threshold: Numeric. DM CG sites with posterior probability < post.threshold are filtered out. Default = 0.5. 
 	# 11. meanDiff.cut: Numeric. Minimum mean difference of methylation levels between the two groups to call a DM CG site. Default = 0.3
 	# 12. max.distance: Numeric. The maximum distance between any two DM CGs site within a DM region. Default = 100bp.
 	# 13. max.empty.CG: Numeric. The maximum number of CGs without coverage between any two DM CG sites within a DM region. Default = 3.
@@ -29,7 +30,7 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
 	#            or 2) identified as DM by HMM-DM but with small meanDiff. Default = 1. 
         # 15. max.post: Numeric. The maximum posterior probability for the EM included in the combined DM region. Default = 0.8.
 	# 16.singleton: Logical. Report the singletons or not in summarizing region step? If TRUE (default), the singletons will be 
-	#                reported in the HMM.DM.results.txt. See section 3.2 for more detail.
+	#                reported in the HMM.DM.results.txt. See section 3.2 of HMM-DM user manual for more detail.
         #####################################################################################################################
 	
 	# The following scource code files are used in quality control
@@ -59,20 +60,24 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
         # The following scource code files are used to update hidden states
         source(paste(code.dir, "gibbs.sample.ID.v4.R",sep="/"))
 
-        # The following scource code files are used to summerize DM CGs into regions
+        # The following scource code files are used to calculate joint probabilities
+        source(paste(code.dir, "joint.prob.R",sep="/"))
+
+        # The following scource code files are used to summarize DM CGs into regions
         source(paste(code.dir, "chr.DM.region.by.CG.ver3.R",sep="/"))
         source(paste(code.dir, "DM.region.combine.ver2.R",sep="/"))    
-
+        source(paste(code.dir, "get.DM.regions.R",sep="/"))    
+        source(paste(code.dir, "DMR.combine.R",sep="/"))    
 	########################################################################################################################
 	# 1. quality control
 	########################################################################################################################
 	
 	# get the methy ratio for CG sites that pass the quality control
-	QC.results<-getMeth(total.reads, meth.reads, n.control, n.test, min.percent )
+	QC.results<-getMeth(total.reads, meth.reads, n1, n2, min.percent )
         mC.matrix<-QC.results[[1]]
         mC.matrix.index<-QC.results[[2]]
                 
-        write.table(mC.matrix, paste(output.dir, "mC.matrix.txt", sep="/"), quote=F, col.names=F, row.names=F, sep="\t")
+        write.table(round(mC.matrix,4), paste(output.dir, "mC.matrix.txt", sep="/"), quote=F, col.names=F, row.names=F, sep="\t")
 
 
 	########################################################################################################################
@@ -80,8 +85,9 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
 	########################################################################################################################
         set.seed(13874312)
 
-        # for the mC=0 or 1, assign slightly different values to them. Because beta distrbition cannot deal with 0 and 1.
-        mat<-t(apply(mC.matrix[,2:(1+n.control+n.test)], 1, function(x) {zero<-(1:length(x))[!is.na(x) & x==0]; one<-(1:length(x))[!is.na(x) & x==1]; 
+        # for the mC=0 or 1, assign slightly different values to them. This is becuase we use log(dbeta) in calculation.
+	# When mC=0 and 1, the dbeta values can be 0. Therefore, the log values will be -Inf.  
+        mat<-t(apply(mC.matrix[,2:(1+n1+n2)], 1, function(x) {zero<-(1:length(x))[!is.na(x) & x==0]; one<-(1:length(x))[!is.na(x) & x==1]; 
                                 x[zero]<-sample(sample(c(0.01,0.011,0.012,0.013),length(zero), replace=T));
                                 x[one]<-sample(sample(c(0.99,0.992,0.993,0.994),length(one),, replace=T)); return(x)}))
 
@@ -119,7 +125,7 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
         ##########################################################
         # break the HMM for each sub-chain
         ##########################################################
-        # for the fisrt CG in each 200CG sub-chain, break the HMM. DO NOT add P(H(i)|P(H(i-1))) term
+        # for the first CG in each 200CG sub-chain, break the HMM. DO NOT add P(H(i)|P(H(i-1))) term
         H.before<-c(4, H[1:(dim(mat)[1]-1)])
         H.before[index.before.after[1,]]<-4 
 
@@ -137,11 +143,9 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
         # keep track of estimated H for each iteration
         H.mat<-matrix(NA, nrow=0, ncol=dim(mat)[1])
 
-
         ##########################################################
         # start the HMM
         ##########################################################
-
         # define the iterations
         R<-iterations
 
@@ -151,7 +155,7 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
         for (j in 1:R)
           {    
              cat("--------------- when j is", j, "time is", date(), "\n") 
-             updated<-gibbs.sample.ID.v4( Obs=mat.2, n.control, n.test, trans.list=trans.list, partition.chain=partition.200bp)
+             updated<-gibbs.sample.ID.v4( Obs=mat.2, n1, n2, trans.list=trans.list, partition.chain=partition.200bp)
              H<- updated[10,] # updated H
 
              H.mat<-rbind(H.mat, H)
@@ -169,41 +173,18 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
              parameters.matrix<-updated[4:9,]
 
             # calculate the joint probabilities
-             joint.prob.sub<-sapply(1:length(partition.200bp), function(x)  {
-	        index.sub<-partition.200bp[[x]]
-	        H.sub<-H[index.sub]
-		h1<-(1:length(H[index.sub]))[H[index.sub]==1];
-		h2<-(1:length(H[index.sub]))[H[index.sub]==2];
-		h3<-(1:length(H[index.sub]))[H[index.sub]==3];
-                mat.sub<-mat.2[partition.200bp[[x]],] ;
-		trans.sub<-trans.list[[x]];
-                joint.h1<-sapply(h1, function(y) {
-		     valid.con<-(1:n.control)[!is.na( mat.sub[y,1:n.control])];
-		     valid.test<-((n.control+1):(n.control+n.test))[!is.na( mat.sub[y,(n.control+1):(n.control+n.test)])];
-                     return(sum(log(dbeta(mat.sub[y,valid.con], 1, parameters.matrix[4, index.sub[y]]))) + sum(log(dbeta(mat.sub[y,valid.test],  parameters.matrix[5, index.sub[y]], 1))) + log(trans.sub[mat.sub[y, (n.control+n.test)+1],1]) + log(mat.sub[y,(n.control+n.test)+9 ])) })
-                joint.h2<-sapply(h2, function(y) {
-		     valid.con<-(1:n.control)[!is.na( mat.sub[y,1:n.control])];
-		     valid.test<-((n.control+1):(n.control+n.test))[!is.na( mat.sub[y,(n.control+1):(n.control+n.test)])];
-	             return( sum(log(dbeta(mat.sub[y,c(valid.con,valid.test)], parameters.matrix[1, index.sub[y]], parameters.matrix[6,index.sub[y]]))) + log(trans.sub[mat.sub[y, (n.control+n.test)+1],2]) + log(mat.sub[y,(n.control+n.test)+9 ]))})
-                joint.h3<-sapply(h3, function(y) {
-		     valid.con<-(1:n.control)[!is.na( mat.sub[y,1:n.control])];
-		     valid.test<-((n.control+1):(n.control+n.test))[!is.na( mat.sub[y,(n.control+1):(n.control+n.test)])];
-                     return(sum(log(dbeta(mat.sub[y,valid.con],  parameters.matrix[2, index.sub[y]], 1))) + sum(log(dbeta(mat.sub[y,valid.test], 1, parameters.matrix[3, index.sub[y]]))) + log(trans.sub[mat.sub[y, (n.control+n.test)+1],3]) + log(mat.sub[y,(n.control+n.test)+9 ]))})
-
-                return(sum(unlist(joint.h1))+sum(unlist(joint.h2))+sum(unlist(joint.h3)))
-                }) 
+            joint.prob.sub<- joint.prob (partition.200bp, H, mat.2)
             joint.prob.vec[j]<-sum( joint.prob.sub)
-
         }
 
         # summarize the final H
-        H.summary<-check.post.H(H.mat[(0.5*R+1):R, ])
+        H.summary<-check.post.H(H.mat[(floor(0.5*R)+1):R, ])
         xx<-get.H.max.string(H1=t(H.summary))
 
         # calculate the meanDiff for each CG
-        mean.control<-apply(mC.matrix[,2:(2+n.control-1)],1, function(x) { return(mean(x[!is.na(x)]))})
-        mean.test<-apply(mC.matrix[,(2+n.control):(2+n.control+n.test-1)],1, function(x) { return(mean(x[!is.na(x)]))})
-        meanDiff<- round(mean.control-mean.test,4)
+        mean1<-apply(mC.matrix[,2:(2+n1-1)],1, function(x) { return(mean(x[!is.na(x)]))})
+        mean2<-apply(mC.matrix[,(2+n1):(2+n1+n2-1)],1, function(x) { return(mean(x[!is.na(x)]))})
+        meanDiff<- round(mean1-mean2,4)
 
         # choose the DM based on the manDiff and posterior p provided. Only the DM CGs with meanDiff>=0.3 and large post.p can be identified as DM
         EM.CG.index<-(1:dim(xx)[1])[xx[,5]==0 | (xx[,5]!=0 & abs(meanDiff) < meanDiff.cut) | (xx[,5]!=0 & xx[,4] < post.threshold)]
@@ -211,31 +192,20 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
         DM.status[EM.CG.index]<-0
        
         # calculate the mean coverage for both groups
-        meanCov.control<- round(apply(total.reads[mC.matrix.index,2:(2+n.control-1)],1, function(x) { return(mean(x[x>0]))}),2)
-        meanCov.test<- round(apply(total.reads[mC.matrix.index,(2+n.control):(2+n.control+n.test-1)],1,function(x) { return(mean(x[x>0]))}),2)
+        meanCov.test<- round(apply(total.reads[mC.matrix.index,2:(2+n1-1)],1, function(x) { return(mean(x[x>0]))}),2)
+        meanCov.control<- round(apply(total.reads[mC.matrix.index,(2+n1):(2+n1+n2-1)],1,function(x) { return(mean(x[x>0]))}),2)
 
-
-        HMM.DM.results<-cbind(rep(chr, dim( mC.matrix)[1]), mC.matrix[,1], xx, meanDiff, DM.status, c(1:dim(xx)[1]), meanCov.control,meanCov.test )
+        HMM.DM.results<-cbind(rep(chr, dim( mC.matrix)[1]), mC.matrix[,1], xx, meanDiff, DM.status, c(1:dim(xx)[1]), meanCov.test,meanCov.control )
 
         HMM.DM.results<-as.data.frame(HMM.DM.results, stringsAsFactors = FALSE)
-        class(HMM.DM.results[,2])<-"numeric"
-        class(HMM.DM.results[,3])<-"numeric"
-        class(HMM.DM.results[,4])<-"numeric"
-        class(HMM.DM.results[,5])<-"numeric"
-        class(HMM.DM.results[,6])<-"numeric"
-        class(HMM.DM.results[,7])<-"numeric"
-        class(HMM.DM.results[,8])<-"numeric"
-        class(HMM.DM.results[,9])<-"numeric"
-        class(HMM.DM.results[,10])<-"numeric"
-        class(HMM.DM.results[,11])<-"numeric"
-        class(HMM.DM.results[,12])<-"numeric"
+	HMM.DM.results[,2:12]<-apply(HMM.DM.results[,2:12], 2, function(x) as.numeric(x))
 
-        # "chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "raw.meanDiff", "meanDiff.DM", "index", "meanCov.control", "meanCov.test
-	colnames(HMM.DM.results)<-c("chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "meanDiff", "DM.status", "index", "meanCov.control", "meanCov.test")
-        write.table(HMM.DM.results, paste(output.dir, "all.CG.txt", sep="/"), quote=F, col.names=c("chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "meanDiff", "DM.status", "index", "meanCov.control", "meanCov.test"), row.names=F, sep="\t")
+        # "chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "raw.meanDiff", "meanDiff.DM", "index", "meanCov.test", "meanCov.control"
+	colnames(HMM.DM.results)<-c("chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "meanDiff", "DM.status", "index", "meanCov.test", "meanCov.control")
+        write.table(HMM.DM.results, paste(output.dir, "all.CG.txt", sep="/"), quote=F, col.names=c("chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "meanDiff", "DM.status", "index", "meanCov.test", "meanCov.control"), row.names=F, sep="\t")
 
         DM.CG<-HMM.DM.results[HMM.DM.results[,9]!=0,]
-        write.table(DM.CG, paste(output.dir, "DM.CG.txt", sep="/"), quote=F, col.names=c("chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "meanDiff", "DM.status", "index", "meanCov.control", "meanCov.test"), row.names=F, sep="\t")
+        write.table(DM.CG, paste(output.dir, "DM.CG.txt", sep="/"), quote=F, col.names=c("chr", "pos", "Hypo.pos", "EM.pos", "Hyper.pos", "max.p", "mCstatus", "meanDiff", "DM.status", "index", "meanCov.test", "meanCov.control"), row.names=F, sep="\t")
 
         # plot the joint probability over iterations
 	postscript(paste(output.dir, "joint.prob.ps", sep="/"), paper="letter", horizontal=T)
@@ -247,14 +217,10 @@ HMM.DM<-function(total.reads, meth.reads, n.control, n.test, chromosome, code.di
 	# 3. summarize DM CG sites into DM regions
 	########################################################################################################################
         regions<-chr.DM.region.by.CG.ver3(chr.DM.status.matrix=HMM.DM.results, raw.CG=total.reads[,1], chr=chromosome, distance.threshold=max.distance, report.singleCG=singleton, empty.CG=max.empty.CG )
-
-
 	refined.region<-DM.region.combine.ver2(regions,chr.DM.status.matrix=HMM.DM.results, raw.CG=total.reads[,1], distance.threshold=max.distance, num.CG.between=max.EM, posterior.threshold=max.post, report.singleCG=singleton , empty.CG=max.empty.CG)
 
-        colnames(refined.region)<-c("chr", "start", "end", "len", "DM" ,"num.CG", "total.CG", "meanCov.control", "meanCov.test", "meanDiff.mC", "meanPost")
-        write.table(refined.region, paste(output.dir, "DMRs.txt",sep="/"), quote=F, col.names=c("chr", "start", "end", "len", "DM" ,"num.CG", "total.CG", "meanCov.control", "meanCov.test", "meanDiff.mC", "meanPost"), row.names=F, sep="\t")
-
-          
+        colnames(refined.region)<-c("chr", "start", "end", "len", "DM" ,"num.CG", "total.CG", "meanCov.test", "meanCov.control", "meanDiff.mC", "meanPost")
+        write.table(refined.region, paste(output.dir, "DMRs.txt",sep="/"), quote=F, col.names=c("chr", "start", "end", "len", "DM" ,"num.CG", "total.CG", "meanCov.test", "meanCov.control", "meanDiff.mC", "meanPost"), row.names=F, sep="\t")          
 
   }
 

@@ -3,7 +3,7 @@ slice.sample.a.b.a <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
 {
    ######################################################################################
    # R FUNCTIONS FOR PERFORMING UNIVARIATE SLICE SAMPLING on a.
-
+   #
    # Arguments:
    #
    #   a, b      Initial point of a and b
@@ -11,12 +11,12 @@ slice.sample.a.b.a <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
    #   a.b.lower Lower bound on support of the distribution (a+b): U(m,n)
    #   a.b.upper Upper bound on support of the distribution (a+b): U(m,n)
    #   a0, b0    a0 and b0 are the parameter values for the prior of phi=a/(a + b): Beta(a0, b0)
+   #
+   # This function samples "a" for the probability function of f(a,b):
    ######################################################################################
 
   # Check the validity of the arguments.
   
-  # cat ("a is", a, "; b is", b, "\n")
-
   if (!is.numeric(a) || length(a)!=1
    || !is.numeric(b) || length(b)!=1
    || !is.numeric(w) || length(w)!=1 || w<=0 
@@ -68,11 +68,9 @@ slice.sample.a.b.a <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
   # Shrink interval to lower and upper bounds.
 
   if (L<left.end) 
-  { L <- left.end
-  }
+     { L <- left.end }
   if (R>right.end)
-  { R <- right.end
-  }
+     { R <- right.end }
 
   # Sample from the interval, shrinking it on each rejection.
 
@@ -85,11 +83,9 @@ slice.sample.a.b.a <- function (a, b, w=1, a.b.lower, a.b.upper,  a0, b0, methyl
     if (fx1>=level) break
 
     if (x1>x0) 
-    { R <- x1
-    }
+      { R <- x1 }
     else 
-    { L <- x1
-    }
+      { L <- x1 }
   }
 
   # Return the point sampled

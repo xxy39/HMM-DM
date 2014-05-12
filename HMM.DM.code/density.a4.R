@@ -11,7 +11,7 @@ density.a4 <- function (a4, methyl.level.pos )
     m <- length(  methyl.nonNA.pos)
 
     first.part <- m*log(a4)
-    second.part <- (a4-1)*log(prod(1- methyl.nonNA.pos))
+    second.part <- (a4-1)*sum(log(1- methyl.nonNA.pos))
 
     log.prob <- first.part + second.part
    
