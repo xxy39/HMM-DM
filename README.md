@@ -11,7 +11,7 @@ HMM.DM.manuscript.pdf: A copy of HMM-DM manuscript
  
 HMM.DM.code: A folder containing all R source code files used for HMM-DM.
 
-Comparing_five_DM_methods.manuscript.pdf: A copy of the manuscript comparing five differentil methlation detection methods
+Comparing_five_DM_methods.manuscript.pdf: A copy of the manuscript comparing five differential methylation detection methods
  
 example.data: A folder containing all example input data, an example.script.txt for running HMM-DM, and the output files generated from the example.script.txt.
 _____________________________________________________________________________________________________________
