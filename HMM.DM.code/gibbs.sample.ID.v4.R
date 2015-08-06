@@ -22,7 +22,8 @@ gibbs.sample.ID.v4<-function(Obs, n1, n2, trans.list, partition.chain)
    #                   3  p7   p8    p9   1
    #                   4  1    1     1    1
    #        p1 - p9 are the transition probs between the 3 states
-   #        all others trans[,4] or trans[4,] = 1. They are prepared for chain breaking. For the first CG, the state before it (H(i-1)) is labeled as 4, the trans prob  P(H(i)|H(i-1))= P(H(i)|4) = 1 in this table, and log(P(H(i)|H(i-1)))=0, meaning that we do not add this term; similarly, for the last CG, the state after it is labeled as 4, so we do not add P(H(i+1)|H(i)) term. In this way, we can break the HMM chain each 200 CGs. This setting can avoid the if statement, so that the same function can be applied to all CGs. 
+   #        all others trans[,4] or trans[4,] = 1. They are prepared for chain breaking. For the first CG, the state before it (H(i-1)) is labeled as 4, the trans prob  P(H(i)|H(i-1))= P(H(i)|4) = 1 in this table, and log(P(H(i)|H(i-1)))=0, meaning that we do not add this term; 
+   #        similarly, for the last CG, the state after it is labeled as 4, so we do not add P(H(i+1)|H(i)) term. In this way, we can break the HMM chain each 200 CGs. This setting can avoid the if statement, so that the same function can be applied to all CGs. 
    #
    # Note 3: output format: 10 cols. Each row represents one CG
    #         col 1-3: H.condi.prob for H=1, 2, 3

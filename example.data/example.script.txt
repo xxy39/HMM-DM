@@ -1,17 +1,6 @@
-#######################################################################
-# Example script for running HMM-DM using example data
-#
-# NOTE!!
-# Users need to define the following two paths:
-# 1) dir: the pathway to HMM.DM package
-# 2) output.dir: the directory where the users want to store the output results
-#######################################################################
-
-# Define the directory of source code files and example data
-# Note: there is no "/" at the end
-dir<-"/home/xxy39/HMM.DM"   # The path to the HMM.DM package. Users need to modify this by themselves 
-code.dir<-paste(dir,"HMM.DM.code", sep="/"))
-exmaple.dir<-paste(dir,"example.data", sep="/"))
+dir<-"HMM.DM/“   # The path to the HMM.DM package. Users need to modify this by themselves 
+code.dir<-paste(dir,"HMM.DM.code", sep="/")
+exmaple.dir<-paste(dir,"example.data", sep="/")
 
 # Read in the example total.reads data
 total.reads<-read.table(paste(exmaple.dir, "total.reads.txt", sep="/"))
@@ -20,12 +9,18 @@ total.reads<-read.table(paste(exmaple.dir, "total.reads.txt", sep="/"))
 meth.reads<-read.table(paste(exmaple.dir, "meth.reads.txt", sep="/"))
 
 # Define the directory of output 
-output.dir<-"/home/xxy39"    # Note, this is only an example. The users need to modify it by themselves 
+output.dir<-“HMM.DM/output“    # Note, this is only an example. The users need to modify it by themselves 
 
 # Run HMM.DM method
 set.seed(123)
 date()
 source(paste(code.dir, "HMM.DM.R", sep="/"))
-HMM.DM(total.reads, meth.reads, n.control=4, n.test=4,  chromosome=1, code.dir, output.dir, min.percent=1 )
+HMM.DM(total.reads, meth.reads, n1=4, n2=4,  chromosome=1, code.dir, output.dir, min.percent=1 )
 date()
 save.image()
+
+
+# test plotDMRs.R and annotation.R
+R CMD BATCH '--args  mC.matrix.txt  DMRs.txt  c(19:21,69)  100  4  4  T  example.DMR.plot'   ../HMM.DM.code/plotDMRs.R
+
+R CMD BATCH '--args  DM.CG.txt  ../example.data/refGene.hg18.txt  1000  T  T  annotation.txt'   ../HMM.DM.code/annotation.R

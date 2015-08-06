@@ -1,9 +1,9 @@
-get.DM.region<-function(DM.type,chr.DM.status.matrix , raw.CG, chr, distance.threshold, empty.CG)
+get.DM.region<-function(DM.type, chr.DM.status.matrix, raw.CG, chr, distance.threshold, empty.CG)
 {
   # This function is used to get DM or hypo regions. It is called by chr.DM.region.by.CG.ver3()
   #
   # Note 1: DM.type, the type of DM regions to summarize, "hyper" or "hypo"
-  # Note 2: "CG.status", usually it is a result from HMM.DM. It has the following 12 columns: 
+  # Note 2: chr.DM.status.matrix usually is the result from HMM.DM. It has the following 12 columns: 
   # "chr", "pos", "Hypo.pos", "EM.pos", "DM.pos", "max.p", "mCstatus", "raw.meanDiff", "meanDIff.DM", "index", "meanCov.ER.pos", "meanCov.ER.neg"
   # chr1 497 0.1333333 0.8666667  0 0.8666667  0 -0.06604325  0   1        132.5       152.25
   # chr1 525 0.0000000 1.0000000  0 1.0000000  0 -0.00691375  0   2        132.5       153.75
@@ -12,10 +12,10 @@ get.DM.region<-function(DM.type,chr.DM.status.matrix , raw.CG, chr, distance.thr
   #---------------------------------------------------------------------------
   # Note 3: "raw.CG", is a vector of all CG positions on that chr 
   # ---------------------------------------------------------------------------
-  # Note 4: "chr", a numeric shows the chr number 
+  # Note 4: "chr", a numeric value shows the chr number 
   # ---------------------------------------------------------------------------
-  # Note 5: "distance.threshold", a numeric shows the threshold of physical distance. The CG sites with distance larger than this value won't be in the same region.
-  # Note 6: "empty.CG", a numeric shows the threshold of number of CGs without coverage between consecutive CG sites to combine together. 
+  # Note 5: "distance.threshold", a numeric value shows the threshold of physical distance. The CG sites with distance larger than this value won't be in the same region.
+  # Note 6: "empty.CG", a numeric value shows the threshold of number of CGs without coverage between consecutive CG sites to combine together. 
   # ---------------------------------------------------------------------------
   # The output file has 11 columns, for example: 
   #  chr     start     end       len  DM      num.CG total.CG     meanCov.control meanCov.test  meanDiff meanPost 

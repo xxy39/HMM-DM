@@ -6,18 +6,18 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
         #####################################################################################################################
 	# run HMM-DM with a single command
 	#
-	# 1. meth.reads: a matrix of methylation levels in two groups. col1, positions; col2-(n1+1), methylation levels for n1 samples in group 1, 
-	#                col(n1+2)-(n1+n2+2), methylation  levels for n2 samples in group 2.
-	# 2. total.reads: a matrix of covreage for all samples in two groups. col1, positions; col2-(n1+1), coverage for n1 samples in group 1, 
-	#                 col(n1+2)-(n1+n2+2), coverage for n2 samples in group 2. 
-	#                 Note that the positions and order of samples should correspond to those in mC.matrix.
-        # 3. n1:  Numeric. number of control samples
+        # 1. meth.reads: a matrix of methylation levels in two groups. getMeth() function will sort this matrix by position in ascending order. It has 1+n1+n2 columns: col1, positions; 
+        #                col2-(n1+1), methylation levels for n2 samples in group 1, col(n1+2)-(n1+n2+1), methylation  levels for n2 samples in group 2.
+        # 2. total.reads: a matrix of covreage for all samples in two groups. getMeth() function will sort this matrix by position in ascending order. It has 1+n1+n2 columns: col1, positions; 
+        #                col2-(n1+1), coverage for n1 samples in group 1, col(n1+2)-(n1+n2+1), coverage for n2 samples in group 2. Note that the positions 
+        #                and order of samples should correspond to those in mC.matrix.
+        # 3. n1:  Numeric. number of case samples
 	# 4. n2:  Numeric. number of control samples
-	# 5. chromosome:Character. The chromosome the users want to analyze, e.g., chromosome =1, or chromosome = 2.
+	# 5. chromosome:Character. The chromosome that users want to analyze, e.g., chromosome =1, or chromosome = 2.
 	# 6. code.dir: String. The directory of the source code files of HMM-DM (e.g., /home/HMM.DM/HMM.DM.code).
 	#                Note, there should be no "/" at the very end.
 	# 7. output.dir: String. The directory for the output files (e.g., /home/HMM.DM.results). Note, there should be no "/" at the very end.
-	#                 Two matrices will be generated from this function. See section 3.2 for more detail. 
+	#                 Two matrices will be generated from this function. See section 4 for more detail. 
 	# 8. min.percent: Numeric. The CG sites should be covered in at least min.percent of the control samples AND of the test samples. 
 	#                 Otherwise, the CG sites are dropped. Default = 0.8
 	# 9. iterations: Numeric. The number of iterations when running HMM-DM. Default = 60
@@ -28,9 +28,10 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
 	# 14. max.EM: Numeric. When combining two consecutive DM regions (with >=2 DM CGs), the maximum number of EM CG sites between these
 	#            two DM regions. These EM CG sites can be 1) identified as EM by HMM-DM but with low posterior probability; 
 	#            or 2) identified as DM by HMM-DM but with small meanDiff. Default = 1. 
+        #            Note: If either of the two consecutive DM regions is singleton, only 1 EM CG site is allowed between them.
         # 15. max.post: Numeric. The maximum posterior probability for the EM included in the combined DM region. Default = 0.8.
 	# 16.singleton: Logical. Report the singletons or not in summarizing region step? If TRUE (default), the singletons will be 
-	#                reported in the HMM.DM.results.txt. See section 3.2 of HMM-DM user manual for more detail.
+	#                reported in the HMM.DM.results.txt. See section 4 of HMM-DM user manual for more detail.
         #####################################################################################################################
 	
 	# The following scource code files are used in quality control
@@ -63,7 +64,7 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
         # The following scource code files are used to calculate joint probabilities
         source(paste(code.dir, "joint.prob.R",sep="/"))
 
-        # The following scource code files are used to summarize DM CGs into regions
+        # The following scource code files are used to summarize DM CGs into DM regions
         source(paste(code.dir, "chr.DM.region.by.CG.ver3.R",sep="/"))
         source(paste(code.dir, "DM.region.combine.ver2.R",sep="/"))    
         source(paste(code.dir, "get.DM.regions.R",sep="/"))    
@@ -98,7 +99,7 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
         # seperate the chain every 200CG. 
         partition.200bp<-partition.by.cutoff(200, mat)
 
-        # get the index for the first and the last CGs of each 200-CG sub-chain
+        # get the index for the first and the last CGs of each 200CG sub-chain
         index.before.after<-sapply(partition.200bp, function(x) {c(x[1],x[length(x)])})
 
 
@@ -111,8 +112,8 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
         # sample the initial H 
         H<-sample(1:3, dim(mat)[1], replace=T)
 
-        # get the initial transition prob for each 200-CG sub-chain. 
-        trans.list<-lapply(partition.200bp, function(x)  {T.count<-count.T(H[x]); trans<-up.T.prob(T.count,T.prior); return(cbind(rbind(trans, rep(1, 3)), rep(1,4))) }) 
+        # get the initial transition prob for each 200CG sub-chain. 
+        transition.list<-lapply(partition.200bp, function(x)  {T.count<-count.T(H[x]); trans<-up.T.prob(T.count,T.prior); return(cbind(rbind(trans, rep(1, 3)), rep(1,4))) }) 
 
 
         # the initial probs
@@ -155,7 +156,7 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
         for (j in 1:R)
           {    
              cat("--------------- when j is", j, "time is", date(), "\n") 
-             updated<-gibbs.sample.ID.v4( Obs=mat.2, n1, n2, trans.list=trans.list, partition.chain=partition.200bp)
+             updated<-gibbs.sample.ID.v4( Obs=mat.2, n1, n2, trans.list=transition.list, partition.chain=partition.200bp)
              H<- updated[10,] # updated H
 
              H.mat<-rbind(H.mat, H)
@@ -169,11 +170,11 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
 
              mat.2<-cbind(mat, H.before, H.after,t(updated[4:9,]), initial.pi.vec )   
              #cat("before partition", j, "time is", date(), "\n") 
-             trans.list<-lapply(partition.200bp, function(x)  {T.count<-count.T(H[x]); trans<-up.T.prob(T.count,T.prior); return(cbind(rbind(trans, rep(1, 3)), rep(1,4))) }) 
+             transition.list<-lapply(partition.200bp, function(x)  {T.count<-count.T(H[x]); trans<-up.T.prob(T.count,T.prior); return(cbind(rbind(trans, rep(1, 3)), rep(1,4))) }) 
              parameters.matrix<-updated[4:9,]
 
             # calculate the joint probabilities
-            joint.prob.sub<- joint.prob (partition.200bp, H, mat.2)
+            joint.prob.sub<- joint.prob(partition.200bp, trans.list=transition.list, H, mat.2, n1, n2,parameters.matrix)
             joint.prob.vec[j]<-sum( joint.prob.sub)
         }
 
@@ -182,8 +183,8 @@ HMM.DM<-function(total.reads, meth.reads, n1, n2, chromosome, code.dir, output.d
         xx<-get.H.max.string(H1=t(H.summary))
 
         # calculate the meanDiff for each CG
-        mean1<-apply(mC.matrix[,2:(2+n1-1)],1, function(x) { return(mean(x[!is.na(x)]))})
-        mean2<-apply(mC.matrix[,(2+n1):(2+n1+n2-1)],1, function(x) { return(mean(x[!is.na(x)]))})
+        mean1<-apply(mC.matrix[,2:(n1+1)],1, function(x) { return(mean(x,na.rm=T))})
+        mean2<-apply(mC.matrix[,(2+n1):(n1+n2+1)],1, function(x) { return(mean(x,na.rm=T))})
         meanDiff<- round(mean1-mean2,4)
 
         # choose the DM based on the manDiff and posterior p provided. Only the DM CGs with meanDiff>=0.3 and large post.p can be identified as DM

@@ -5,11 +5,11 @@ DMR.combine<-function( DM.type, regions, chr.DM.status.matrix, raw.CG, distance.
    # 1) DM.type, the type of DM regions to summarize, "hyper" or "hypo"
    # 2) regions: the output from chr.DM.region.by.CG.ver3
    # 3) chr.DM.status.matrix: the same input as in chr.DM.region.by.CG.ver3
-   # 4) raw.CG, 
-   # 5) distance.threshold: a numeric shows the threshold of physical distance. The CG sites with distance larger than this value won't be in the same region.
+   # 4) raw.CG: a vector of all CG positions on that chr 
+   # 5) distance.threshold: a numeric value shows the threshold of physical distance. The CG sites with distance larger than this value won't be in the same region.
    # 6) num.CG.between: the max number of EM CG sites allowed between any two small DM regions
    # 7) posterior.threshold: the max posterio probability for the EM CGs inbetween
-   # 8) empty.CG: a numeric shows the threshold of number of CGs without coverage between consecutive CG sites to combine together 
+   # 8) empty.CG: a numeric value shows the threshold of number of CGs without coverage between consecutive CG sites to combine together 
    # output:
    # The output file has 11 columns, for example: 
    #  chr     start     end       len  DM      num.CG total.CG     meanCov.control meanCov.test  meanDiff meanPost 
