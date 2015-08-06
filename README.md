@@ -2,7 +2,7 @@ HMM-DM
 ======
 The HMM-DM program identifies differentially methylated (DM) CG sites and regions from whole genome and targeted bisulfite sequencing (BS) data. This approach first uses a Hidden Markov Model to identify differentially methylated CG sites accounting for spatial correlation across CGs and variation across samples, and then summarizes identified DM CG sites into regions based on their status and distance. This program takes aligned BS data in multiple samples and outputs identified DM CG sites and regions.
 
-HMM-DM requires R installed. Ideally it is run in a Linux/Unix system. This program includes following documents and folders:
+HMM-DM requires R installed. Ideally it is run in a Linux/Unix system. This program includes the following documents and folders:
 _____________________________________________________________________________________________________________
  
 HMM.DM.user.manual.pdf:	A copy of the user manual
