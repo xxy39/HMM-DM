@@ -15,3 +15,7 @@ Comparing_five_DM_methods.manuscript.pdf: A copy of the manuscript comparing fiv
  
 example.data: A folder containing all example input data, an example.script.txt for running HMM-DM, and the output files generated from the example.script.txt.
 _____________________________________________________________________________________________________________
+
+How to cite us:
+
+Yu, X. & Sun, S. (2016). HMM-DM: identifying differentially methylated regions using a hidden Markov model. Statistical Applications in Genetics and Molecular Biology, Doi:10.1515/sagmb-2015-0077
