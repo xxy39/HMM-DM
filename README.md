@@ -18,6 +18,12 @@ ________________________________________________________________________________
 
 Yu, X. & Sun, S. (2016). HMM-DM: identifying differentially methylated regions using a hidden Markov model. Statistical Applications in Genetics and Molecular Biology, Doi:10.1515/sagmb-2015-0077
 
+**Contact us**
+
+Shuying Sun (ssun5211@yahoo.com)
+
+Xiaoqing Yu (yuxq1120@gmail.com)
+
 **Access to the published manuscripts**
 
 HMM-DM: http://www.ncbi.nlm.nih.gov/pubmed/26887041
