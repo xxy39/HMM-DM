@@ -19,5 +19,7 @@ Yu, X. & Sun, S. (2016). HMM-DM: identifying differentially methylated regions u
 Access to the published manuscripts:
 
 HMM-DM: http://www.ncbi.nlm.nih.gov/pubmed/26887041
+
 HMM-Fisher: http://www.ncbi.nlm.nih.gov/pubmed/26854292
+
 Comparing five DM methods: http://www.ncbi.nlm.nih.gov/pubmed/26910753
