@@ -10,6 +10,8 @@ HMM.DM.user.manual.pdf:	A copy of the user manual
 HMM.DM.code: A folder containing all R source code files used for HMM-DM.
 
 example.data: A folder containing all example input data, an example.script.txt for running HMM-DM, and the output files generated from the example.script.txt.
+
+Simulation: A folder containing all R scource code used for data simulating.
 _____________________________________________________________________________________________________________
 
 **How to cite us**
