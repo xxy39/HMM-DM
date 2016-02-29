@@ -20,9 +20,7 @@ Yu, X. & Sun, S. (2016). HMM-DM: identifying differentially methylated regions u
 
 **Contact us**
 
-Shuying Sun (ssun5211@yahoo.com)
-
-Xiaoqing Yu (yuxq1120@gmail.com)
+Shuying Sun (ssun5211@yahoo.com) and Xiaoqing Yu (yuxq1120@gmail.com)
 
 **Access to the published manuscripts**
 
