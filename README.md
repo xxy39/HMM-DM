@@ -6,6 +6,8 @@ HMM-DM requires R installed. Ideally it is run in a Linux/Unix system. This prog
 _____________________________________________________________________________________________________________
  
 HMM.DM.user.manual.pdf:	A copy of the user manual
+
+HMM.DM.suppl.pdf: A copy of the HMM-DM supplementary file 
  
 HMM.DM.code: A folder containing all R source code files used for HMM-DM.
 
